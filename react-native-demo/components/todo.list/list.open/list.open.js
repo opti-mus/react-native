@@ -1,39 +1,40 @@
 import { useEffect, useLayoutEffect, useState } from 'react'
-import { View, StyleSheet, StatusBar, LogBox, Image } from 'react-native'
+import { View, StyleSheet, StatusBar, LogBox, Image, Keyboard, Pressable } from 'react-native'
 import ListInput from '../list.input/list.input'
 import ListRender from '../list.render/list.render'
-import { CommonActions } from '@react-navigation/native'
-import { source } from 'react-native/Libraries/DeprecatedPropTypes/DeprecatedImagePropType'
 import CustomButton from '../custom.button/custom.button'
 import { toggleModalDelete } from '../../../actions/todo.actions'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
+import Icon from 'react-native-vector-icons/MaterialIcons'
 
 const ListOpen = ( { route, navigation } ) => {
-    const { item , setTodoList  } = route.params
-    const { id, subtasks, title, color } = item
+    const { item, setTodoList } = route.params
+    const { id, subtasks } = item
+
     const [subtask, setSubtask] = useState( subtasks )
     const dispatch = useDispatch()
 
 
     useEffect( () => {
         setTodoList( ( prev ) => [
-                ...prev,
-                ...prev.filter( ( el ) => {
-                    if ( el.id === id ) {
-                        el.subtasks = [...subtask]
-                    }
-                })]
+            ...prev,
+            ...prev.filter( ( el ) => {
+                if ( el.id === id ) {
+                    el.subtasks = [...subtask]
+                }
+            } )]
         )
     }, [subtask] )
 
-    useLayoutEffect(() => {
+    useLayoutEffect( () => {
 
-        navigation.setOptions({
+        navigation.setOptions( {
             ...route.params,
             title: item.value,
             headerRight: () => (
                 <CustomButton styles={styles.editBtn} onPress={deleteItem}>
-                    <Image style={styles.icon} source={require( './icon-del.png' )}/>
+                    {/*<Image style={styles.icon} source={require( './icon-del.png' )}/>*/}
+                    <Icon name="delete" size={24} color="#fff"/>
                 </CustomButton>
 
             ),
@@ -43,14 +44,13 @@ const ListOpen = ( { route, navigation } ) => {
             //     onChangeText: (event) => searchHandler(event.nativeEvent.text),
             //
             // }
-        });
-    }, [navigation]);
+        } )
+    }, [navigation] )
 
 
-
-    const searchHandler = (value) => {
-        const filtered = subtask.filter(el => el.value.includes(value))
-        setSubtask(filtered)
+    const searchHandler = ( value ) => {
+        const filtered = subtask.filter( el => el.value.includes( value ) )
+        setSubtask( filtered )
     }
 
     const deleteItem = () => {
@@ -59,23 +59,28 @@ const ListOpen = ( { route, navigation } ) => {
             navigation.popToTop()
         }
 
-        dispatch(toggleModalDelete({
-            current : true,
+        dispatch( toggleModalDelete( {
+            current: true,
             callback: deleteCallback,
-        }))
+        } ) )
 
     }
     return (
-        <View style={styles.subtasks}>
+        <Pressable style={styles.subtasks} onPress={() => Keyboard.dismiss()}>
             <ListInput setTodoList={setSubtask}/>
-            <ListRender todoList={subtask} setTodoList={setSubtask} navigation={navigation} />
-        </View>
+            <ListRender todoList={subtask} setTodoList={setSubtask} navigation={navigation}/>
+        </Pressable>
     )
 }
 const styles = StyleSheet.create( {
+    icon: {
+        width: 20,
+        height: 20,
+    },
     subtasks: {
-        marginTop: StatusBar.currentHeight || 0,
+        paddingTop: StatusBar.currentHeight || 0,
         paddingHorizontal: 20,
+        flex: 1,
     },
 } )
 export default ListOpen

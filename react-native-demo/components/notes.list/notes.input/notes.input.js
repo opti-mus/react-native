@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View, TextInput, Button, Alert } from 'react-native'
 import { useState } from 'react'
-import { randomID } from '../utils/utils'
+import { randomID } from '../../todo.list/utils/utils'
 
 
-const ListInput = ( { setTodoList } ) => {
+const NotesInput = ( { setNotesList } ) => {
 
     const [inputValue, setInputValue] = useState( '' )
 
@@ -17,25 +17,24 @@ const ListInput = ( { setTodoList } ) => {
         }
 
         const nextItemData = {
-            value: inputValue,
             id: randomID(),
+            title: inputValue,
+            value: '',
             complete: false,
             edit: false,
-            selected: false,
-            color: '#282c34',
-            subtasks: [],
         }
-        setTodoList( ( prev ) => ([...prev, nextItemData]) )
+
+        setNotesList( ( prev ) => ([...prev, nextItemData]) )
         setInputValue( '' )
     }
-    
+
     return (
         <View style={styles.wrapper}>
             <TextInput value={inputValue}
                        blurOnSubmit={false}
                        onSubmitEditing={createItem}
                        onChangeText={inputHandler}
-                       placeholder={'Введите название нового списка'}
+                       placeholder={'Введите название новой заметки'}
                        style={styles.input}
             />
         </View>
@@ -48,7 +47,8 @@ const styles = StyleSheet.create( {
     },
     wrapper: {
         flexDirection: 'row',
-        marginBottom: 20
+        marginBottom: 20,
+        // paddingHorizontal: 20,
     },
     input: {
         borderBottomWidth: 2,
@@ -58,4 +58,4 @@ const styles = StyleSheet.create( {
     },
 } )
 
-export default ListInput
+export default NotesInput

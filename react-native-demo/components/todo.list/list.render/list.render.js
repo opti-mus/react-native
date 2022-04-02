@@ -6,8 +6,9 @@ import {
 import ListItem from '../list.item/list.item'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import { storeData } from '../../../store/app.store'
+import { TODO_STORE } from '../../../constants/store.constants'
 
-const ListRender = ({ todoList, setTodoList, navigation, todoListReducer, route }) => {
+const ListRender = ({ todoList, setTodoList }) => {
   const searchHandler = (value) => {
     const filtered = todoList.filter(el => el.value.includes(value))
     setTodoList(filtered)
@@ -25,13 +26,12 @@ const ListRender = ({ todoList, setTodoList, navigation, todoListReducer, route 
   // }, [navigation]);
 
   useEffect(() => {
-    storeData(todoList)
+    storeData(TODO_STORE, todoList)
   }, [todoList])
 
   const renderList = () => {
     return todoList.map((el) => (
       <ListItem
-        navigation={navigation}
         key={el.id}
         item={el}
         setTodoList={setTodoList}

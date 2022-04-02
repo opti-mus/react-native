@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Animated, StyleSheet } from 'react-native'
 
-const ListItemAnimation = ( { children } ) => {
+const ListItemAnimation = ( { children, removeItem } ) => {
     const dropAnim = useRef( new Animated.Value( -20 ) ).current
     const fadeAnim = useRef( new Animated.Value( 0 ) ).current
 
@@ -32,7 +32,13 @@ const ListItemAnimation = ( { children } ) => {
             useNativeDriver: true
         } ).start()
     }
-
+    const dropUp = () => {
+        Animated.spring( dropAnim, {
+            toValue: -20,
+            duration: 300,
+            useNativeDriver: true
+        } ).start()
+    }
     useEffect( () => {
         dropDown()
         fadeIn()
@@ -42,7 +48,7 @@ const ListItemAnimation = ( { children } ) => {
         <Animated.View
             style={[
                 defaultStyles.animated,
-                defaultStyles.endAnimation
+                defaultStyles.endAnimation,
             ]}
         >
             {children}

@@ -10,7 +10,7 @@ import {
 import { useEffect, useLayoutEffect, useState } from 'react'
 import CustomButton from '../custom.button/custom.button'
 import ListItemAnimation from '../list.item.animation/list.item.animation'
-import { useRoute } from '@react-navigation/native'
+import { useNavigation, useRoute } from '@react-navigation/native'
 import { connect, useDispatch, useSelector } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import {
@@ -18,23 +18,32 @@ import {
     removeTodolistItem,
     toggleModalDelete, confirmEditTodolistItem, cancelEditTodolistItem
 } from '../../../actions/todo.actions'
+import Icon from 'react-native-vector-icons/MaterialIcons'
+import CountSubtask from './components/countSubtask'
 
-const ListItem = ( { navigation, todoList, item, setTodoList } ) => {
+const ListItem = ( { todoList, item, setTodoList } ) => {
     const [editValue, setEditValue] = useState( item.value )
 
+    const navigation = useNavigation()
     const route = useRoute()
     const dispatch = useDispatch()
 
-    const deleteCallback = () => {
-        setTodoList( ( prev ) => prev.filter( ( el ) => el.id !== item.id ) )
 
-
-    }
     const deleteSelected = () => {
-        setTodoList( ( prev ) => prev.filter( ( el ) => !el.selected ) )
+        dispatch( toggleModalDelete( {
+            current: true,
+            callback: () => {
+                setTodoList( ( prev ) => prev.filter( ( el ) => !el.selected ) )
+                navigation.setOptions( {
+                    ...route.params,
+                    headerRight: () => {
+                    },
+                } )
+            },
+        } ) )
+
     }
     const editItem = () => {
-        // dispatch(editTodolistItem(item))
         setTodoList( ( prev ) => [
             ...prev,
             ...prev.filter( ( el ) => {
@@ -49,7 +58,7 @@ const ListItem = ( { navigation, todoList, item, setTodoList } ) => {
     const deleteItem = () => {
         dispatch( toggleModalDelete( {
             current: true,
-            callback: deleteCallback,
+            callback: () => setTodoList( ( prev ) => prev.filter( ( el ) => el.id !== item.id ) ),
         } ) )
 
     }
@@ -57,7 +66,10 @@ const ListItem = ( { navigation, todoList, item, setTodoList } ) => {
         setEditValue( val )
     }
     const confirmEdit = () => {
-        // dispatch( confirmEditTodolistItem( item, editValue ) )
+        if ( !editValue.length ) {
+            Alert.alert( 'Поле не должно быть пустым!' )
+            return
+        }
         setTodoList( ( prev ) => [
             ...prev,
             ...prev.filter( ( el ) => {
@@ -69,7 +81,6 @@ const ListItem = ( { navigation, todoList, item, setTodoList } ) => {
         ] )
     }
     const cancelEdit = () => {
-        // dispatch( cancelEditTodolistItem( item ) )
         setTodoList( ( prev ) => [
             ...prev,
             ...prev.filter( ( el ) => {
@@ -82,13 +93,22 @@ const ListItem = ( { navigation, todoList, item, setTodoList } ) => {
 
     }
     const openList = () => {
-        const isSelected = todoList.filter(el => el.selected)
+        const isSelected = todoList.filter( el => el.selected )
 
-        if(isSelected.length) {
+        if ( isSelected.length ) {
             selectItem()
         } else {
             if ( route.name === 'Home' ) {
-                navigation.navigate( 'List', { item, setTodoList } )
+                navigation.navigate( 'List', { item, setTodoList, todoList } )
+            } else {
+                setTodoList( ( prev ) => [
+                    ...prev,
+                    ...prev.filter( ( el ) => {
+                        if ( el.id === item.id ) {
+                            el.complete = !el.complete
+                        }
+                    } ),
+                ] )
             }
         }
 
@@ -112,7 +132,11 @@ const ListItem = ( { navigation, todoList, item, setTodoList } ) => {
                 navigation.setOptions( {
                     ...route.params,
                     headerRight: () => (
-                        <Button onPress={deleteSelected} title="Delete"/>
+                        <ListItemAnimation>
+                            <CustomButton styles={styles.editBtn} onPress={deleteSelected}>
+                                <Icon name="delete" size={24} color="#fff"/>
+                            </CustomButton>
+                        </ListItemAnimation>
                     ),
                 } )
             } else {
@@ -127,26 +151,22 @@ const ListItem = ( { navigation, todoList, item, setTodoList } ) => {
 
     }, [todoList] )
 
-
     return (
-        <ListItemAnimation>
+        <ListItemAnimation removeItem={deleteItem}>
             <Pressable onPress={openList} onLongPress={selectItem}>
                 <View style={[styles.wrapper, item.selected ? styles.itemSelected : null]}>
                     <View style={styles.defaultWrapper}>
-                        <Text style={styles.itemValue}>{item.value}</Text>
+                        <Text numberOfLines={2} style={[styles.itemValue, item.complete ? styles.itemComplete : null]}>{item.value}</Text>
                         <View style={styles.btnWrapper}>
+                            <CountSubtask item={item}/>
                             <CustomButton styles={styles.editBtn} onPress={editItem}>
-                                <Image
-                                    style={styles.icon}
-                                    source={require( './icon-edit.png' )}
-                                />
+                                <Icon name="edit" size={20} color="#282c34"/>
                             </CustomButton>
-                            <CustomButton styles={styles.editBtn} onPress={deleteItem}>
-                                <Image style={styles.icon} source={require( '../list.open/icon-del.png' )}/>
-                            </CustomButton>
-                            {/*{item.selected ? (*/}
-                            {/*    <CustomButton styles={[styles.selectItem]} onPress={selectItem}/>*/}
-                            {/*) : null}*/}
+                            {route.name !== 'Home' ?
+                                <CustomButton styles={styles.editBtn} onPress={deleteItem}>
+                                    <Icon name="delete-outline" size={24} color="#282c34"/>
+                                </CustomButton>
+                                : null}
                         </View>
                     </View>
 
@@ -160,16 +180,10 @@ const ListItem = ( { navigation, todoList, item, setTodoList } ) => {
                                 onChangeText={changeText}
                             />
                             <CustomButton styles={styles.editBtn} onPress={confirmEdit}>
-                                <Image
-                                    style={styles.icon}
-                                    source={require( './icon-save.png' )}
-                                />
+                                <Icon name="check" size={20} color="#282c34"/>
                             </CustomButton>
                             <CustomButton styles={styles.editBtn} onPress={cancelEdit}>
-                                <Image
-                                    style={styles.icon}
-                                    source={require( './icon-cancel.png' )}
-                                />
+                                <Icon name="close" size={20} color="#282c34"/>
                             </CustomButton>
                         </View>
                     ) : null}
@@ -179,6 +193,16 @@ const ListItem = ( { navigation, todoList, item, setTodoList } ) => {
     )
 }
 const styles = StyleSheet.create( {
+    subtaskCount: {
+        flexDirection: 'row',
+        borderWidth: 1,
+        borderColor: '#282c34',
+        padding: 3,
+        borderRadius: 3,
+    },
+    count: {
+        fontSize: 10,
+    },
     selectItem: {
         borderRadius: 50,
         width: 15,
@@ -218,6 +242,9 @@ const styles = StyleSheet.create( {
         padding: 10,
         flex: 1,
     },
+    itemComplete: {
+        textDecorationLine: 'line-through',
+    },
     defaultWrapper: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -243,18 +270,5 @@ const styles = StyleSheet.create( {
     },
 } )
 
-const mapStateToProps = ( state ) => {
-    const { modalDelete } = state
-    return { modalDelete }
-}
 
-const mapDispatchToProps = dispatch => (
-    bindActionCreators( {
-        toggleModalDelete,
-        removeTodolistItem,
-        editTodolistItem,
-    }, dispatch )
-)
-
-// export default connect(mapStateToProps,mapDispatchToProps)(ListItem);
 export default ListItem

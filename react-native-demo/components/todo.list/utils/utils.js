@@ -19,3 +19,9 @@ export function isEqual(object1, object2) {
 
     return true;
 }
+export const customGap = (spacing, numCols, indexItem) => {
+    return {
+        marginBottom: spacing,
+        marginLeft: indexItem % numCols !== 0 ? spacing : 0,
+    }
+}

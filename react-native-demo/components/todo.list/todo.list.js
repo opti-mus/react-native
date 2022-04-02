@@ -7,8 +7,9 @@ import { isEqual, randomID } from './utils/utils'
 import ModalComponent from './modal/modal.component'
 import { useSelector } from 'react-redux'
 import { getData, storeData } from '../../store/app.store'
+import { TODO_STORE } from '../../constants/store.constants'
 
-const TodoList = ( { navigation, route } ) => {
+const TodoList = ( ) => {
     const [loading, setLoading] = useState( false )
     const data = [
         {
@@ -47,7 +48,7 @@ const TodoList = ( { navigation, route } ) => {
     const [todoList, setTodoList] = useState( data )
 
     useEffect( () => {
-        getData()
+        getData(TODO_STORE)
             .then( res => {
                 if ( !!res ) setTodoList( res )
             } )
@@ -61,8 +62,6 @@ const TodoList = ( { navigation, route } ) => {
             <ListRender
                 todoList={todoList}
                 setTodoList={setTodoList}
-                navigation={navigation}
-                route={route}
             />
             <ModalComponent />
         </Pressable>
@@ -80,5 +79,3 @@ const styles = StyleSheet.create( {
 
 
 export default TodoList
-
-// export default TodoList

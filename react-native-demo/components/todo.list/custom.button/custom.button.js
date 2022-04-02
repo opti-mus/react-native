@@ -1,4 +1,4 @@
-import { Pressable, TouchableOpacity, Text , StyleSheet, View} from 'react-native'
+import { Pressable, TouchableOpacity, Text, StyleSheet, View, TouchableWithoutFeedback } from 'react-native'
 
 const CustomButton = ({ styles, onPress, children }) => {
    const defaultStyles = StyleSheet.create({
@@ -15,11 +15,11 @@ const CustomButton = ({ styles, onPress, children }) => {
    })
 
     return (
-        <Pressable accessibilityRole={'button'} onPress={onPress}  >
+        <TouchableWithoutFeedback accessibilityRole={'button'} onPress={onPress}  >
             <View style={[defaultStyles.wrapper, styles]}>
                 {children}
             </View>
-        </Pressable>
+        </TouchableWithoutFeedback>
     )
 }
 // const stylesCustom = StyleSheet.create({
